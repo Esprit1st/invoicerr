@@ -28,11 +28,12 @@ export const baseTemplate = `
             <h1>{{company.name}}</h1><br>
             {{#if company.description}}<strong>{{labels.description}}</strong> {{company.description}}<br>{{/if}}
             <p>{{company.address}}<br>
-            {{company.city}}, {{company.postalCode}}<br>
+            {{company.postalCode}} {{company.city}}<br>
             {{company.country}}<br>
-            {{company.email}} | {{company.phone}}<br>
-            {{#if company.legalId}}<strong>{{labels.legalId}}:</strong> {{company.legalId}}<br>{{/if}}
-            {{#if company.VAT}}<strong>{{labels.VATId}}:</strong> {{company.VAT}}{{/if}}</p>
+            {{company.email}}<br>
+            {{company.phone}}<br>
+            {{#if company.legalId}}{{labels.legalId}}: {{company.legalId}}<br>{{/if}}
+            {{#if company.VAT}}{{labels.VATId}}: {{company.VAT}}{{/if}}</p>
         </div>
         <div class="invoice-info">
             <h2>{{labels.invoice}}</h2>
@@ -46,8 +47,7 @@ export const baseTemplate = `
         <p>{{client.name}}<br>
         {{#if client.description}}<strong>{{labels.description}}</strong> {{client.description}}<br>{{/if}}
         {{client.address}}<br>
-        {{client.city}}, {{client.postalCode}}<br>
-        {{client.country}}<br>
+        {{client.postalCode}} {{client.city}}<br>
         {{client.email}}</p>
         {{#if client.legalId}}<strong>{{labels.legalId}}:</strong> {{client.legalId}}<br>{{/if}}
         {{#if client.VAT}}<strong>{{labels.VATId}}:</strong> {{client.VAT}}{{/if}}</p>
