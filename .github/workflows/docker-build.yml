@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,8 +27,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ secrets.GHCR_USERNAME }}/invoicerr:latest .
+          docker build --platform linux/amd64 -t ghcr.io/${{ secrets.GHCR_USERNAME }}/invoicerr-german:latest .
 
       - name: Push Docker image
         run: |
-          docker push ghcr.io/${{ secrets.GHCR_USERNAME }}/invoicerr:latest
+          docker push ghcr.io/${{ secrets.GHCR_USERNAME }}/invoicerr-german:latest
