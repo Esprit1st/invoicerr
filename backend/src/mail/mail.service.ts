@@ -35,6 +35,12 @@ export class MailService {
         try {
             await this.transporter.sendMail(mailOptions);
         } catch (error) {
+            // Utilisation d'un logger si disponible, sinon console.error
+            if (typeof logger !== 'undefined') {
+                logger.error('Failed to send email. Please check your SMTP configuration.', { category: 'mail', details: { error } });
+            } else {
+                console.error('Failed to send email. Please check your SMTP configuration.', error);
+            }
             throw new Error('Failed to send email. Please check your SMTP configuration.');
         }
 

@@ -5,8 +5,8 @@ import { ISigningProvider } from '@/plugins/signing/types';
 import { MailService } from '@/mail/mail.service';
 import { PluginsService } from '../plugins/plugins.service';
 import { WebhookDispatcherService } from '../webhooks/webhook-dispatcher.service';
-import prisma from '@/prisma/prisma.service';
 import { logger } from '@/logger/logger.service';
+import prisma from '@/prisma/prisma.service';
 
 @Injectable()
 export class SignaturesService {
@@ -89,6 +89,7 @@ export class SignaturesService {
         const signature = await prisma.signature.findFirst({
             where: { id: signatureId, isActive: true },
             select: {
+                id: true,
                 quoteId: true,
                 quote: {
                     select: {
@@ -103,6 +104,7 @@ export class SignaturesService {
         });
 
         if (!signature || !signature.quote || !signature.quote.client || !signature.quote.client.contactEmail) {
+            logger.error('Quote not found or client information is missing.', { category: 'signature', details: { signatureId: signature?.id } });
             throw new BadRequestException('Quote not found or client information is missing.');
         }
 
@@ -174,6 +176,7 @@ export class SignaturesService {
         });
 
         if (!signature || !signature.quote || !signature.quote.client || !signature.quote.client.contactEmail) {
+            logger.error('Quote not found or client information is missing.', { category: 'signature', details: { signatureId: signature?.id } });
             throw new BadRequestException('Quote not found or client information is missing.');
         }
 
@@ -188,6 +191,7 @@ export class SignaturesService {
         });
 
         if (!mailTemplate) {
+            logger.error('Email template for signature request not found.', { category: 'signature' });
             throw new BadRequestException('Email template for signature request not found.');
         }
 
@@ -208,6 +212,7 @@ export class SignaturesService {
         try {
             await this.mailService.sendMail(mailOptions)
         } catch (error) {
+            logger.error('Failed to send signature email', { category: 'signature', details: { error } });
             throw new BadRequestException('Failed to send signature email. Please check your SMTP configuration.');
         }
 
@@ -222,6 +227,7 @@ export class SignaturesService {
         });
 
         if (!signature) {
+            logger.error('Signature not found or OTP code is invalid.', { category: 'signature', details: { email } });
             throw new BadRequestException('Signature not found or OTP code is invalid.');
         }
 
@@ -231,6 +237,7 @@ export class SignaturesService {
         });
 
         if (!mailTemplate) {
+            logger.error('Email template for OTP code not found.', { category: 'signature' });
             throw new BadRequestException('Email template for OTP code not found.');
         }
 
@@ -247,6 +254,7 @@ export class SignaturesService {
         try {
             await this.mailService.sendMail(mailOptions)
         } catch (error) {
+            logger.error('Failed to send OTP email', { category: 'signature', details: { error } });
             throw new BadRequestException('Failed to send OTP email. Please check your SMTP configuration.');
         }
 
@@ -268,6 +276,7 @@ export class SignaturesService {
         });
 
         if (!signature) {
+            logger.error('Invalid or expired OTP code.', { category: 'signature', details: { signatureId, otpCode } });
             throw new BadRequestException('Invalid or expired OTP code.');
         }
 

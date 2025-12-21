@@ -3,8 +3,8 @@ import { Currency, WebhookEvent } from '../../../prisma/generated/prisma/client'
 
 import { UpsertInvoicesDto } from '@/modules/recurring-invoices/dto/invoices.dto';
 import { WebhookDispatcherService } from '../webhooks/webhook-dispatcher.service';
-import prisma from '@/prisma/prisma.service';
 import { logger } from '@/logger/logger.service';
+import prisma from '@/prisma/prisma.service';
 
 @Injectable()
 export class RecurringInvoicesService {
@@ -204,6 +204,7 @@ export class RecurringInvoicesService {
         });
 
         if (!recurringInvoice) {
+            logger.error('Recurring invoice not found', { category: 'recurring-invoice' });
             throw new BadRequestException('Recurring invoice not found');
         }
 
@@ -228,6 +229,7 @@ export class RecurringInvoicesService {
         });
 
         if (!existingRecurringInvoice) {
+            logger.error('Recurring invoice not found', { category: 'recurring-invoice' });
             throw new BadRequestException('Recurring invoice not found');
         }
 

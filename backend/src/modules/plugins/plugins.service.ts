@@ -6,10 +6,10 @@ import { EInvoice } from '@fin.cx/einvoice';
 import { PluginRegistry } from '../../plugins';
 import { PluginType } from '../../../prisma/generated/prisma/client';
 import { generateWebhookSecret } from '@/utils/webhook-security';
+import { logger } from '@/logger/logger.service';
 import prisma from '@/prisma/prisma.service';
 import { randomUUID } from 'crypto';
 import { simpleGit } from 'simple-git';
-import { logger } from '@/logger/logger.service';
 
 export interface PdfFormatInfo {
   format_name: string;
@@ -93,6 +93,7 @@ export class PluginsService {
     const files = readdirSync(pluginPath);
     const jsFile = files.find((f) => extname(f) === '.js');
     if (!jsFile) {
+      logger.error(`No .js file found in plugin directory: ${pluginPath}`, { category: 'plugin', details: { pluginPath } });
       throw new Error(`No .js file found in plugin directory: ${pluginPath}`);
     }
     const pluginFile = join(pluginPath, jsFile);
@@ -162,6 +163,7 @@ export class PluginsService {
     });
 
     if (!plugin) {
+      logger.error(`Plugin with id "${id}" not found`, { category: 'plugin', details: { id } });
       throw new Error(`Plugin with id "${id}" not found`);
     }
 
@@ -183,6 +185,7 @@ export class PluginsService {
     });
 
     if (existingActivePlugin && !PluginRegistry.multiInstancePluginTypes.has(plugin.type)) {
+      logger.error(`Another plugin "${existingActivePlugin.name}" is already active for category "${plugin.type}". Please disable it first.`, { category: 'plugin', details: { pluginType: plugin.type } });
       throw new BadRequestException(`Another plugin "${existingActivePlugin.name}" is already active for category "${plugin.type}". Please disable it first.`);
     }
 
@@ -218,6 +221,7 @@ export class PluginsService {
     });
 
     if (!plugin) {
+      logger.error(`Plugin with id "${id}" not found`, { category: 'plugin', details: { id } });
       throw new BadRequestException(`Plugin with id "${id}" not found`);
     }
 
@@ -230,6 +234,7 @@ export class PluginsService {
     });
 
     if (existingActivePlugin) {
+      logger.error(`Another plugin "${existingActivePlugin.name}" is already active for category "${plugin.type}". Please disable it first.`, { category: 'plugin', details: { pluginType: plugin.type } });
       throw new BadRequestException(`Another plugin "${existingActivePlugin.name}" is already active for category "${plugin.type}". Please disable it first.`);
     }
 
@@ -333,6 +338,7 @@ export class PluginsService {
       case 'oidc':
         return 'OIDC';
       default:
+        logger.error(`Unknown plugin type: ${type}`, { category: 'plugin', details: { type } });
         throw new Error(`Unknown plugin type: ${type}`);
     }
   }
@@ -346,6 +352,7 @@ export class PluginsService {
   async generateXml(format: string, xmlInvoice: any): Promise<string> {
     // Return XML using a plugin
     // For now, throw an error as this feature is not yet implemented
+    logger.error(`XML generation for format "${format}" not implemented yet`, { category: 'plugin', details: { format } });
     throw new Error(`XML generation for format "${format}" not implemented yet`);
   }
 
@@ -358,6 +365,7 @@ export class PluginsService {
   async deletePlugin(uuid: string): Promise<boolean> {
     const index = this.plugins.findIndex((p) => p.__uuid === uuid);
     if (index === -1) {
+      logger.error(`Plugin with UUID "${uuid}" not found`, { category: 'plugin', details: { uuid } });
       throw new Error(`Plugin with UUID "${uuid}" not found`);
     }
     const plugin = this.plugins[index];
@@ -384,6 +392,7 @@ export class PluginsService {
     });
 
     if (!plugin) {
+      logger.error(`Active plugin with id "${pluginId}" not found`, { category: 'plugin', details: { pluginId } });
       throw new BadRequestException(`Active plugin with id "${pluginId}" not found`);
     }
     logger.info(`Validating plugin: ${plugin.name} (${plugin.type})`, { category: 'plugin', details: { pluginName: plugin.name, pluginType: plugin.type } });

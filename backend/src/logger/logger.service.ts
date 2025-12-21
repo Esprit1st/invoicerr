@@ -1,6 +1,7 @@
-import prisma from '@/prisma/prisma.service';
-import { Logger } from '@nestjs/common';
 import { Log, LogLevel } from "prisma/generated/prisma/client";
+
+import { Logger } from '@nestjs/common';
+import prisma from '@/prisma/prisma.service';
 
 interface LogOptions {
     userId?: string;
@@ -37,6 +38,7 @@ export class LoggerService {
 
         } catch (error) {
             console.error('Erreur lors de l\'enregistrement du log en base de données:', error);
+            logger.error('Impossible d\'enregistrer le log.', { category: 'logger', details: { error } });
             throw new Error('Impossible d\'enregistrer le log.');
         }
     }

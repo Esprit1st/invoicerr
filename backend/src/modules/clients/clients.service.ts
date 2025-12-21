@@ -82,18 +82,22 @@ export class ClientsService {
         if (type === 'INDIVIDUAL') {
             data.name = ``;
             if (!data.contactFirstname || (data.contactFirstname as string).trim() === '') {
+                logger.error('First name is required for individual clients', { category: 'client' });
                 throw new BadRequestException('First name is required for individual clients');
             }
             if (!data.contactLastname || (data.contactLastname as string).trim() === '') {
+                logger.error('Last name is required for individual clients', { category: 'client' });
                 throw new BadRequestException('Last name is required for individual clients');
             }
         } else {
             data.contactFirstname = undefined;
             data.contactLastname = undefined;
             if (!data.name || (data.name as string).trim() === '') {
+                logger.error('Company name is required for company clients', { category: 'client' });
                 throw new BadRequestException('Company name is required for company clients');
             }
             if (!data.legalId || (data.legalId as string).trim() === '') {
+                logger.error('SIRET/SIREN (legalId) is required for company clients', { category: 'client' });
                 throw new BadRequestException('SIRET/SIREN (legalId) is required for company clients');
             }
         }
@@ -115,11 +119,13 @@ export class ClientsService {
 
     async editClientsInfo(editClientsDto: EditClientsDto) {
         if (!editClientsDto.id) {
+            logger.error('Client ID is required for editing', { category: 'client' });
             throw new BadRequestException('Client ID is required for editing');
         }
 
         const existingClient = await prisma.client.findUnique({ where: { id: editClientsDto.id } });
         if (!existingClient) {
+            logger.error('Client not found', { category: 'client', details: { id: editClientsDto.id } });
             throw new BadRequestException('Client not found');
         }
 
@@ -129,16 +135,20 @@ export class ClientsService {
 
         if (type === 'INDIVIDUAL') {
             if (!data.contactFirstname || (data.contactFirstname as string).trim() === '') {
+                logger.error('First name is required for individual clients', { category: 'client' });
                 throw new BadRequestException('First name is required for individual clients');
             }
             if (!data.contactLastname || (data.contactLastname as string).trim() === '') {
+                logger.error('Last name is required for individual clients', { category: 'client' });
                 throw new BadRequestException('Last name is required for individual clients');
             }
         } else {
             if (!data.name || (data.name as string).trim() === '') {
+                logger.error('Company name is required for company clients', { category: 'client' });
                 throw new BadRequestException('Company name is required for company clients');
             }
             if (!data.legalId || (data.legalId as string).trim() === '') {
+                logger.error('SIRET/SIREN (legalId) is required for company clients', { category: 'client' });
                 throw new BadRequestException('SIRET/SIREN (legalId) is required for company clients');
             }
         }
@@ -165,6 +175,7 @@ export class ClientsService {
         const existingClient = await prisma.client.findUnique({ where: { id } });
 
         if (!existingClient) {
+            logger.error('Client not found', { category: 'client', details: { id } });
             throw new BadRequestException('Client not found');
         }
 

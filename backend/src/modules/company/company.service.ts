@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EditCompanyDto, PDFConfigDto } from '@/modules/company/dto/company.dto';
-import { createHash } from 'crypto';
 import { MailTemplate, MailTemplateType, WebhookEvent } from '../../../prisma/generated/prisma/client'
 
 import { WebhookDispatcherService } from '../webhooks/webhook-dispatcher.service';
+import { createHash } from 'crypto';
 import { logger } from '@/logger/logger.service';
 import prisma from '@/prisma/prisma.service';
 import { randomUUID } from 'crypto';
@@ -111,6 +111,7 @@ export class CompanyService {
         });
 
         if (!existingCompany?.pdfConfig) {
+            logger.error('No PDF configuration found for the company', { category: 'company' });
             throw new BadRequestException('No PDF configuration found for the company');
         }
 
@@ -176,6 +177,7 @@ export class CompanyService {
         });
 
         if (!existingCompany?.pdfConfig) {
+            logger.error('No PDF configuration found for the company', { category: 'company' });
             throw new BadRequestException('No PDF configuration found for the company');
         }
 
@@ -325,6 +327,7 @@ export class CompanyService {
         });
 
         if (!existingCompany?.emailTemplates) {
+            logger.error('No email templates found for the company', { category: 'company' });
             throw new BadRequestException('No email templates found for the company');
         }
 
@@ -370,6 +373,7 @@ export class CompanyService {
             include: { company: true }
         });
         if (!existingTemplate) {
+            logger.error(`Email template with id ${id} not found`, { category: 'company', details: { id } });
             throw new BadRequestException(`Email template with id ${id} not found`);
         }
 

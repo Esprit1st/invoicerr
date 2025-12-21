@@ -2,8 +2,8 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PaymentMethod, PaymentMethodType, WebhookEvent } from '../../../prisma/generated/prisma/client';
 
 import { WebhookDispatcherService } from '../webhooks/webhook-dispatcher.service';
-import prisma from '@/prisma/prisma.service';
 import { logger } from '@/logger/logger.service';
+import prisma from '@/prisma/prisma.service';
 
 export interface CreatePaymentMethodDto {
   name: string;
@@ -28,6 +28,7 @@ export class PaymentMethodsService {
   async create(dto: CreatePaymentMethodDto): Promise<PaymentMethod> {
     const company = await prisma.company.findFirst();
     if (!company) {
+      logger.error('No company found. Please create a company first.', { category: 'payment-method' });
       throw new BadRequestException('No company found. Please create a company first.');
     }
 
@@ -57,6 +58,7 @@ export class PaymentMethodsService {
   async findAll(): Promise<PaymentMethod[]> {
     const company = await prisma.company.findFirst();
     if (!company) {
+      logger.error('No company found. Please create a company first.', { category: 'payment-method' });
       throw new BadRequestException('No company found. Please create a company first.');
     }
 
@@ -79,11 +81,13 @@ export class PaymentMethodsService {
   async update(id: string, dto: EditPaymentMethodDto): Promise<PaymentMethod> {
     const existing = await prisma.paymentMethod.findUnique({ where: { id } });
     if (!existing) {
+      logger.error('Payment method not found', { category: 'payment-method', details: { id } });
       throw new BadRequestException('Payment method not found');
     }
 
     const company = await prisma.company.findFirst();
     if (!company || existing.companyId !== company.id) {
+      logger.error('Payment method not found', { category: 'payment-method', details: { id } });
       throw new BadRequestException('Payment method not found');
     }
 
@@ -123,11 +127,13 @@ export class PaymentMethodsService {
   async softDelete(id: string): Promise<PaymentMethod> {
     const existing = await prisma.paymentMethod.findUnique({ where: { id } });
     if (!existing) {
+      logger.error('Payment method not found', { category: 'payment-method', details: { id } });
       throw new BadRequestException('Payment method not found');
     }
 
     const company = await prisma.company.findFirst();
     if (!company || existing.companyId !== company.id) {
+      logger.error('Payment method not found', { category: 'payment-method', details: { id } });
       throw new BadRequestException('Payment method not found');
     }
 

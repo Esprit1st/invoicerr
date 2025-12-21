@@ -97,6 +97,7 @@ export class InvoicesService {
 
         const company = await prisma.company.findFirst();
         if (!company) {
+            logger.error('No company found. Please create a company first.', { category: 'invoice' });
             throw new BadRequestException('No company found. Please create a company first.');
         }
 
@@ -104,6 +105,7 @@ export class InvoicesService {
             where: { id: body.clientId },
         });
         if (!client) {
+            logger.error('Client not found', { category: 'invoice' });
             throw new BadRequestException('Client not found');
         }
 
@@ -167,11 +169,13 @@ export class InvoicesService {
         const { items, id, ...data } = body;
 
         if (!id) {
+            logger.error('Invoice ID is required for editing', { category: 'invoice' });
             throw new BadRequestException('Invoice ID is required for editing');
         }
 
         const company = await prisma.company.findFirst();
         if (!company) {
+            logger.error('No company found. Please create a company first.', { category: 'invoice' });
             throw new BadRequestException('No company found. Please create a company first.');
         }
 
@@ -179,6 +183,7 @@ export class InvoicesService {
             where: { id: data.clientId },
         });
         if (!client) {
+            logger.error('Client not found', { category: 'invoice' });
             throw new BadRequestException('Client not found');
         }
 
@@ -188,6 +193,7 @@ export class InvoicesService {
         });
 
         if (!existingInvoice) {
+            logger.error('Invoice not found', { category: 'invoice' });
             throw new BadRequestException('Invoice not found');
         }
 
@@ -283,6 +289,7 @@ export class InvoicesService {
         });
 
         if (!existingInvoice) {
+            logger.error('Invoice not found', { category: 'invoice' });
             throw new BadRequestException('Invoice not found');
         }
 
@@ -319,6 +326,7 @@ export class InvoicesService {
         });
 
         if (!invoice) {
+            logger.error('Invoice not found', { category: 'invoice' });
             throw new BadRequestException('Invoice not found');
         }
 
@@ -447,6 +455,7 @@ export class InvoicesService {
         });
 
         if (!invRec) {
+            logger.error('Invoice not found', { category: 'invoice' });
             throw new BadRequestException('Invoice not found');
         }
 
@@ -566,7 +575,10 @@ export class InvoicesService {
 
     async getInvoicePDFFormat(invoiceId: string, format: '' | 'pdf' | ExportFormat): Promise<Uint8Array> {
         const invRec = await prisma.invoice.findUnique({ where: { id: invoiceId }, include: { items: true, client: true, company: true, quote: true } });
-        if (!invRec) throw new BadRequestException('Invoice not found');
+        if (!invRec) {
+            logger.error('Invoice not found', { category: 'invoice' });
+            throw new BadRequestException('Invoice not found');
+        }
 
         const pdfBuffer = await this.getInvoicePdf(invoiceId);
 
@@ -590,6 +602,7 @@ export class InvoicesService {
         });
 
         if (!quote) {
+            logger.error('Quote not found when creating invoice from quote', { category: 'invoice', details: { quoteId } });
             throw new BadRequestException('Quote not found');
         }
 
@@ -631,6 +644,7 @@ export class InvoicesService {
         });
 
         if (!invoice) {
+            logger.error('Invoice not found when trying to mark as paid', { category: 'invoice', details: { invoiceId } });
             throw new BadRequestException('Invoice not found');
         }
 
@@ -680,11 +694,13 @@ export class InvoicesService {
         });
 
         if (!invoice) {
+            logger.error('Invoice not found', { category: 'invoice' });
             throw new BadRequestException('Invoice not found');
         }
 
         // If client has no email, skip sending and return an informative message
         if (!invoice.client?.contactEmail) {
+            logger.error('Client has no email configured; invoice not sent', { category: 'invoice' });
             return { message: 'Client has no email configured; invoice not sent' };
         }
 
@@ -696,6 +712,7 @@ export class InvoicesService {
         });
 
         if (!mailTemplate) {
+            logger.error('Email template for signature request not found.', { category: 'invoice' });
             throw new BadRequestException('Email template for signature request not found.');
         }
 
@@ -720,6 +737,7 @@ export class InvoicesService {
         try {
             await this.mailService.sendMail(mailOptions);
         } catch (error) {
+            logger.error('Failed to send invoice email', { category: 'invoice', details: { error } });
             throw new BadRequestException('Failed to send invoice email. Please check your SMTP configuration.');
         }
 

@@ -1,11 +1,12 @@
 "use client"
 
-import { Spinner } from "@/components/ui/spinner"
-import { useState, useEffect } from "react"
-import { useSse } from "@/hooks/use-fetch"
+import { useEffect, useState } from "react"
+
+import { LogDetailsDialog } from "./__components/log-details-dialog"
 import { LogsFilters } from "./__components/logs-filters"
 import { LogsTable } from "./__components/logs-table"
-import { LogDetailsDialog } from "./__components/log-details-dialog"
+import { Spinner } from "@/components/ui/spinner"
+import { useSse } from "@/hooks/use-fetch"
 
 export type LogLevel = "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL"
 
@@ -26,7 +27,6 @@ export function LogsSettings() {
   const [loading, setLoading] = useState(true)
   const [selectedLog, setSelectedLog] = useState<Log | null>(null)
 
-  // Filter states
   const [levelFilter, setLevelFilter] = useState<LogLevel[]>([])
   const [categoryFilter, setCategoryFilter] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
@@ -36,15 +36,10 @@ export function LogsSettings() {
   })
 
   useEffect(() => {
-    // SSE will provide initial payload immediately; no one-off fetch required
-    // keep loading true until SSE provides data
-  }, [])
-
-  useEffect(() => {
     applyFilters()
   }, [logs, levelFilter, categoryFilter, searchQuery, dateRange])
 
-  const { data: sseData, loading: sseLoading, error: sseError, close } = useSse<Log[]>('/api/logs?intervalMs=1000')
+  const { data: sseData, loading: sseLoading, error: sseError } = useSse<Log[]>('/api/logs?intervalMs=1000')
 
   useEffect(() => {
     if (sseError) {
@@ -57,7 +52,6 @@ export function LogsSettings() {
 
     if (!sseData) return
 
-    // sseData is an array of logs (newest-first from server); normalize and merge
     const incoming = (Array.isArray(sseData) ? sseData : [sseData]).map((log: any) => ({
       ...log,
       timestamp: new Date(log.timestamp),
@@ -65,9 +59,7 @@ export function LogsSettings() {
 
     setLogs((prev) => {
       const map = new Map<string, Log>()
-      // keep existing
       for (const l of prev) map.set(l.id, l)
-      // add/overwrite with incoming
       for (const l of incoming) map.set(l.id, l)
       const merged = Array.from(map.values())
       merged.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
@@ -78,17 +70,14 @@ export function LogsSettings() {
   function applyFilters() {
     let filtered = [...logs]
 
-    // Filter by level
     if (levelFilter.length > 0) {
       filtered = filtered.filter((log) => levelFilter.includes(log.level))
     }
 
-    // Filter by category
     if (categoryFilter.length > 0) {
       filtered = filtered.filter((log) => categoryFilter.includes(log.category))
     }
 
-    // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(
@@ -100,7 +89,6 @@ export function LogsSettings() {
       )
     }
 
-    // Filter by date range
     if (dateRange.from) {
       filtered = filtered.filter((log) => log.timestamp >= dateRange.from!)
     }
@@ -136,7 +124,6 @@ export function LogsSettings() {
         totalLogs={logs.length}
         filteredCount={filteredLogs.length}
         onRefresh={() => {
-          // clear and let SSE repopulate
           setLogs([])
           setLoading(true)
         }}

@@ -118,6 +118,7 @@ export class QuotesService {
         const company = await prisma.company.findFirst();
 
         if (!company) {
+            logger.error('No company found. Please create a company first.', { category: 'quote' });
             throw new BadRequestException('No company found. Please create a company first.');
         }
 
@@ -126,6 +127,7 @@ export class QuotesService {
         });
 
         if (!client) {
+            logger.error('Client not found', { category: 'quote', details: { clientId: body.clientId } });
             throw new BadRequestException('Client not found');
         }
 
@@ -189,6 +191,7 @@ export class QuotesService {
         const { items, id, ...data } = body;
 
         if (!id) {
+            logger.error('Quote ID is required for editing', { category: 'quote' });
             throw new BadRequestException('Quote ID is required for editing');
         }
 
@@ -198,6 +201,7 @@ export class QuotesService {
         });
 
         if (!existingQuote) {
+            logger.error('Quote not found', { category: 'quote', details: { id } });
             throw new BadRequestException('Quote not found');
         }
 
@@ -295,6 +299,7 @@ export class QuotesService {
         });
 
         if (!existingQuote) {
+            logger.error('Quote not found', { category: 'quote', details: { id } });
             throw new BadRequestException('Quote not found');
         }
 
@@ -332,6 +337,7 @@ export class QuotesService {
         });
 
         if (!quote || !quote.company || !quote.company.pdfConfig) {
+            logger.error('Quote or associated PDF config not found', { category: 'quote', details: { id: quote?.id } });
             throw new BadRequestException('Quote or associated PDF config not found');
         }
 
@@ -452,6 +458,7 @@ export class QuotesService {
 
     async markQuoteAsSigned(id: string) {
         if (!id) {
+            logger.error('Quote ID is required', { category: 'quote' });
             throw new BadRequestException('Quote ID is required');
         }
 
@@ -465,6 +472,7 @@ export class QuotesService {
         });
 
         if (!existingQuote) {
+            logger.error('Quote not found', { category: 'quote', details: { id } });
             throw new BadRequestException('Quote not found');
         }
 
